@@ -1,5 +1,6 @@
 package ru.yandex.practicum.tests;
 
+import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import org.junit.After;
@@ -7,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import ru.yandex.practicum.RestConfig;
+import ru.yandex.practicum.util.RestConfig;
 import ru.yandex.practicum.models.OrderCreatingDTO;
 import ru.yandex.practicum.models.Order;
 import ru.yandex.practicum.models.OrderCancellationDTO;
@@ -49,6 +50,7 @@ public class OrderCreatingTest extends BaseTest {
     @Test
     @DisplayName("Тест: Проверь, что когда создаёшь заказ: 1. Можно указать один из цветов — BLACK или GREY; " +
             "2. Можно указать оба цвета; 3. Можно совсем не указывать цвет; 4. Тело ответа содержит track")
+    @Description("Позитивный тест для проверки ручки /api/v1/orders на создание заказа с различными вариантами допустимых цветов скутера")
     public void creatingOrderWithDifferentScooterColorsTest() {
         ValidatableResponse response = orderSteps.createOrder(orderCreatingDTO);
         response.statusCode(201).body("track", notNullValue());

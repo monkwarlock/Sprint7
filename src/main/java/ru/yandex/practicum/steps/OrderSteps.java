@@ -5,6 +5,7 @@ import io.restassured.response.ValidatableResponse;
 import ru.yandex.practicum.models.*;
 
 import static io.restassured.RestAssured.given;
+import static ru.yandex.practicum.util.Endpoints.*;
 
 public class OrderSteps {
 
@@ -13,7 +14,7 @@ public class OrderSteps {
         return given()
                 .body(orderCreatingDTO)
                 .when()
-                .post("/api/v1/orders")
+                .post(CREATING_AN_ORDER)
                 .then();
     }
 
@@ -22,7 +23,7 @@ public class OrderSteps {
         return given()
                 .body(orderCancellationDTO)
                 .when()
-                .put("/api/v1/orders/cancel")
+                .put(ORDER_CANCELLATION)
                 .then();
     }
 
@@ -30,26 +31,26 @@ public class OrderSteps {
     public ValidatableResponse gettingListOfOrders() {
         return given()
                 .when()
-                .get("/api/v1/orders")
+                .get(GETTING_A_LIST_OF_ORDERS)
                 .then();
     }
 
     @Step("Получение заказа по номеру")
-    public ValidatableResponse gettingOrdersByItsNumber(Order order) {
+    public ValidatableResponse gettingOrdersByItsNumber(Integer orderTrack) {
         return given()
                 .when()
-                .queryParam("t", order.getTrack())
-                .get("/api/v1/orders/track")
+                .queryParam("t", orderTrack)
+                .get(RECEIVING_AN_ORDER_BY_NUMBER)
                 .then();
     }
 
     @Step("Принятие заказа")
-    public ValidatableResponse acceptOrder(Courier courier, Order order) {
+    public ValidatableResponse acceptOrder(Integer courierId, Order order) {
         return given()
                 .when()
                 .pathParams("id", order.getId())
-                .queryParam("courierId", courier.getCourierId())
-                .put("/api/v1/orders/accept/{id}")
+                .queryParam("courierId", courierId)
+                .put(ORDER_ACCEPTANCE)
                 .then();
     }
 
@@ -58,7 +59,7 @@ public class OrderSteps {
         return given()
                 .when()
                 .pathParams("id", order.getId())
-                .put("/api/v1/orders/accept/{id}")
+                .put(ORDER_ACCEPTANCE)
                 .then();
     }
 
@@ -67,7 +68,7 @@ public class OrderSteps {
         return given()
                 .when()
                 .queryParam("courierId", courier.getCourierId())
-                .put("/api/v1/orders/accept/")
+                .put(ORDER_ACCEPTANCE_WITHOUT_ID)
                 .then();
     }
 
@@ -76,14 +77,14 @@ public class OrderSteps {
         return given()
                 .when()
                 .pathParams("id", orderCompletionDTO.getId())
-                .put("/api/v1/orders/finish/{id}")
+                .put(ORDER_COMPLETION)
                 .then();
     }
 
     public ValidatableResponse gettingOrdersWithoutItsNumber() {
         return given()
                 .when()
-                .get("/api/v1/orders/track")
+                .get(ORDER_COMPLETION_WITHOUT_ID)
                 .then();
     }
 }

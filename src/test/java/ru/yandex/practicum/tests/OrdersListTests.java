@@ -1,5 +1,7 @@
 package ru.yandex.practicum.tests;
 
+import io.qameta.allure.Description;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import org.junit.Test;
 import ru.yandex.practicum.models.*;
@@ -14,6 +16,8 @@ public class OrdersListTests extends BaseTest {
     OrderSteps orderSteps = new OrderSteps();
 
     @Test
+    @DisplayName("Тест: Список заказов: в тело ответа возвращается список заказов.")
+    @Description("Позитивный тест для проверки ручки /api/v1/orders на получение списка заказов")
     public void getListOfOrder() {
         // Получение списка заказов
         ValidatableResponse response = orderSteps.gettingListOfOrders();

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.tests;
 
+import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -34,6 +35,7 @@ public class CourierCreatingTests extends BaseTest {
     @Test
     @DisplayName("Тест: курьера можно создать, запрос возвращает правильный код ответа," +
             "возвращает ok: true")
+    @Description("Позитивный тест для проверки ручки /api/v1/courier на создание курьера")
     public void canCreateCourierTest() {
         // Создание курьера
         ValidatableResponse response = courierSteps.createCourier(courierCreatingDTO);
@@ -43,6 +45,7 @@ public class CourierCreatingTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: нельзя создать двух одинаковых курьеров, если создать пользователя с логином, который уже есть, возвращается ошибка")
+    @Description("Негативный тест для проверки ручки /api/v1/courier на создание двух одинаковых курьеров")
     public void creatingTwoIdenticalCourierLoginTests() {
         // Создание курьера 1
         ValidatableResponse response = courierSteps.createCourier(courierCreatingDTO);
@@ -61,6 +64,7 @@ public class CourierCreatingTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: курьера нельзя создать, если не передать логин")
+    @Description("Негативный тест для проверки ручки /api/v1/courier на создание курьера не передав логин")
     public void canNotCreateCourierWithoutLoginTest() {
         // Создание курьера
         CourierCreatingDTO courierDTO = new CourierCreatingDTO("", courier.getPassword(), courier.getFirstName());
@@ -71,6 +75,7 @@ public class CourierCreatingTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: курьера нельзя создать, если не передать пароль")
+    @Description("Негативный тест для проверки ручки /api/v1/courier на создание курьера не передав пароль")
     public void canNotCreateCourierWithoutPasswordTest() {
         // Создание курьера
         CourierCreatingDTO courierDTO = new CourierCreatingDTO(courier.getLogin(), "", courier.getFirstName());
@@ -81,6 +86,7 @@ public class CourierCreatingTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: курьера нельзя создать, если не передать Имя")
+    @Description("Негативный тест для проверки ручки /api/v1/courier на создание курьера не передав имя")
     // Курьер создаётся без имени
     public void canNotCreateCourierWithoutFirstNameTest() {
         CourierCreatingDTO courierDTO = new CourierCreatingDTO(courier.getLogin(), courier.getPassword(), "");
@@ -98,7 +104,7 @@ public class CourierCreatingTests extends BaseTest {
         }
         // Удаление курьера
         if (courier.getCourierId() != null) {
-            courierSteps.deleteCourier(courier).statusCode(200);
+            courierSteps.deleteCourier(courier.getCourierId()).statusCode(200);
         }
     }
 }

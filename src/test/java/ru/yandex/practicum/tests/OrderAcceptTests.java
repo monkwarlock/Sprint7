@@ -1,12 +1,13 @@
 package ru.yandex.practicum.tests;
 
+import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import ru.yandex.practicum.RestConfig;
+import ru.yandex.practicum.util.RestConfig;
 import ru.yandex.practicum.models.*;
 import ru.yandex.practicum.steps.CourierSteps;
 import ru.yandex.practicum.steps.OrderSteps;
@@ -44,11 +45,6 @@ public class OrderAcceptTests extends BaseTest {
                 .withFirstName(RandomStringUtils.randomAlphabetic(9));
         courierCreatingDTO = new CourierCreatingDTO(courier.getLogin(), courier.getPassword(), courier.getFirstName());
         courierLoginDTO = new CourierLoginDTO(courier.getLogin(), courier.getPassword());
-    }
-
-    @Test
-    @DisplayName("Тест: Принять заказ: успешный запрос возвращает ok: true")
-    public void acceptTheOrderTest() {
         // Создание заказа
         ValidatableResponse responseTrack = orderSteps.createOrder(orderCreatingDTO).statusCode(201);
         order.withTrack(responseTrack.extract().body().path("track"));
@@ -59,23 +55,24 @@ public class OrderAcceptTests extends BaseTest {
         ValidatableResponse loginResponse = courierSteps.loginCourier(courierLoginDTO).statusCode(200);
         courier.withCurierId(loginResponse.extract().body().path("id"));
         // Получение заказа по его номеру
-        ValidatableResponse responseOrder = orderSteps.gettingOrdersByItsNumber(order).statusCode(200);
+        ValidatableResponse responseOrder = orderSteps.gettingOrdersByItsNumber(order.getTrack()).statusCode(200);
         order.withId(responseOrder.extract().body().path("order.id"));
+    }
+
+    @Test
+    @DisplayName("Тест: Принять заказ: успешный запрос возвращает ok: true")
+    @Description("Позитивный тест для проверки ручки /api/v1/orders/accept/:id на принятие заказа курьером")
+    public void acceptTheOrderTest() {
         // Принятие заказа
-        ValidatableResponse acceptOrderResponse = orderSteps.acceptOrder(courier, order);
+        ValidatableResponse acceptOrderResponse = orderSteps.acceptOrder(courier.getCourierId(), order);
         acceptOrderResponse.statusCode(200).body("ok", is(true));
         statusCode = acceptOrderResponse.extract().statusCode();
     }
 
     @Test
     @DisplayName("Тест: если не передать id курьера, запрос вернёт ошибку")
+    @Description("Негативный тест для проверки ручки /api/v1/orders/accept/:id на принятие заказа курьером без Id курьера")
     public void acceptTheOrderWithoutCourierIdTest() {
-        // Создание заказа
-        ValidatableResponse responseTrack = orderSteps.createOrder(orderCreatingDTO).statusCode(201);
-        order.withTrack(responseTrack.extract().body().path("track"));
-        // Получение заказа по его номеру
-        ValidatableResponse responseOrder = orderSteps.gettingOrdersByItsNumber(order).statusCode(200);
-        order.withId(responseOrder.extract().body().path("order.id"));
         // Принятие заказа без courierId
         ValidatableResponse acceptOrderResponse = orderSteps.acceptWithoutCourierIdOrder(order);
         acceptOrderResponse.statusCode(400).body("message", containsString("Недостаточно данных для поиска"));
@@ -84,30 +81,18 @@ public class OrderAcceptTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: если передать неверный id курьера, запрос вернёт ошибку")
+    @Description("Негативный тест для проверки ручки /api/v1/orders/accept/:id на принятие заказа курьером с неправильным Id курьера")
     public void acceptTheOrderWithInvalidCourierIdTest() {
-        // Создание заказа
-        ValidatableResponse responseTrack = orderSteps.createOrder(orderCreatingDTO).statusCode(201);
-        order.withTrack(responseTrack.extract().body().path("track"));
-        // Получение заказа по его номеру
-        courier.withCurierId(2147483647);
-        ValidatableResponse responseOrder = orderSteps.gettingOrdersByItsNumber(order).statusCode(200);
-        order.withId(responseOrder.extract().body().path("order.id"));
         // Принятие заказа
-        ValidatableResponse acceptOrderResponse = orderSteps.acceptOrder(courier, order);
+        ValidatableResponse acceptOrderResponse = orderSteps.acceptOrder(2147483647, order);
         acceptOrderResponse.statusCode(404).body("message", containsString("Курьера с таким id не существует"));
         statusCode = acceptOrderResponse.extract().statusCode();
-        System.out.println(statusCode);
     }
 
     @Test
     @DisplayName("Тест: если не передать номер заказа, запрос вернёт ошибку")
+    @Description("Негативный тест для проверки ручки /api/v1/orders/accept/:id на принятие заказа курьером без номера заказа")
     public void acceptTheOrderWithoutIdTest() {
-        // Создание курьера
-        ValidatableResponse responseCourier = courierSteps.createCourier(courierCreatingDTO).statusCode(201);
-        statusCodeCreateCourier = responseCourier.extract().statusCode();
-        // Авторизация курьера
-        ValidatableResponse loginResponse = courierSteps.loginCourier(courierLoginDTO).statusCode(200);
-        courier.withCurierId(loginResponse.extract().body().path("id"));
         // Принятие заказа без Id заказа
         ValidatableResponse acceptOrderResponse = orderSteps.acceptWithoutIdOrder(courier);
         acceptOrderResponse.statusCode(400).body("message", containsString("Недостаточно данных для поиска"));
@@ -117,16 +102,11 @@ public class OrderAcceptTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: если передать неверный номер заказа, запрос вернёт ошибку")
+    @Description("Негативный тест для проверки ручки /api/v1/orders/accept/:id на принятие заказа курьером с неправильным номером заказа")
     public void acceptTheOrderWithInvalidIdTest() {
-        // Создание курьера
-        ValidatableResponse responseCourier = courierSteps.createCourier(courierCreatingDTO).statusCode(201);
-        statusCodeCreateCourier = responseCourier.extract().statusCode();
-        // Авторизация курьера
-        ValidatableResponse loginResponse = courierSteps.loginCourier(courierLoginDTO).statusCode(200);
-        courier.withCurierId(loginResponse.extract().body().path("id"));
         // Принятие заказа
         order.withId(2147483647);
-        ValidatableResponse acceptOrderResponse = orderSteps.acceptOrder(courier, order);
+        ValidatableResponse acceptOrderResponse = orderSteps.acceptOrder(courier.getCourierId(), order);
         acceptOrderResponse.statusCode(404).body("message", containsString("Заказа с таким id не существует"));
         statusCode = acceptOrderResponse.extract().statusCode();
     }
@@ -147,7 +127,7 @@ public class OrderAcceptTests extends BaseTest {
         finally {
             // Удаление курьера
             if (courier.getCourierId() != null && statusCodeCreateCourier.equals(201)) {
-                courierSteps.deleteCourier(courier).statusCode(200);
+                courierSteps.deleteCourier(courier.getCourierId()).statusCode(200);
             }
         }
     }

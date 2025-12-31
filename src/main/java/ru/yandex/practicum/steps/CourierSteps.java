@@ -7,6 +7,7 @@ import ru.yandex.practicum.models.CourierCreatingDTO;
 import ru.yandex.practicum.models.CourierLoginDTO;
 
 import static io.restassured.RestAssured.given;
+import static ru.yandex.practicum.util.Endpoints.*;
 
 public class CourierSteps {
 
@@ -15,7 +16,7 @@ public class CourierSteps {
         return given()
                 .body(courierCreatingDTO)
                 .when()
-                .post("/api/v1/courier")
+                .post(CREATING_A_COURIER)
                 .then();
     }
 
@@ -24,16 +25,16 @@ public class CourierSteps {
         return given()
                 .body(courierLoginDTO)
                 .when()
-                .post("/api/v1/courier/login")
+                .post(AUTHORIZATION_COURIER)
                 .then();
     }
 
     @Step("Удаление курьера из сервиса")
-    public ValidatableResponse deleteCourier(Courier courier) {
+    public ValidatableResponse deleteCourier(Integer courierId) {
         return given()
                 .when()
-                .pathParams("id", courier.getCourierId())
-                .delete("/api/v1/courier/{id}")
+                .pathParams("id", courierId)
+                .delete(COURIER_REMOVAL)
                 .then();
     }
 
@@ -41,7 +42,7 @@ public class CourierSteps {
     public ValidatableResponse deleteCourierWithoutId() {
         return given()
                 .when()
-                .delete("/api/v1/courier/")
+                .delete(COURIER_REMOVAL_WITHOUT_ID)
                 .then();
     }
 }

@@ -5,7 +5,7 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.LogConfig;
 import io.restassured.http.ContentType;
 import org.junit.Before;
-import ru.yandex.practicum.RestConfig;
+import ru.yandex.practicum.util.RestConfig;
 
 public class BaseTest {
 

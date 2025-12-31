@@ -1,5 +1,6 @@
 package ru.yandex.practicum.tests;
 
+import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -28,13 +29,14 @@ public class CourierLoginTests extends BaseTest {
                 .withFirstName(RandomStringUtils.randomAlphabetic(9));
         courierCreatingDTO = new CourierCreatingDTO(courier.getLogin(), courier.getPassword(), courier.getFirstName());
         courierLoginDTO = new CourierLoginDTO(courier.getLogin(), courier.getPassword());
+        // Создаю курьера
+        courierSteps.createCourier(courierCreatingDTO).statusCode(201);
     }
 
     @Test
     @DisplayName("Тест: курьер может авторизоваться, успешный запрос возвращает id")
+    @Description("Позитивный тест для проверки ручки /api/v1/courier/login на авторизацию курьера")
     public void canLoginCourierTest(){
-        // Создаю курьера
-        courierSteps.createCourier(courierCreatingDTO).statusCode(201);
         // Авторизуюсь в сервисе
         ValidatableResponse loginResponse = courierSteps.loginCourier(courierLoginDTO);
         loginResponse.statusCode(200).body("id", notNullValue());
@@ -43,9 +45,8 @@ public class CourierLoginTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: система вернёт ошибку, если неправильно указать логин")
+    @Description("Негативный тест для проверки ручки /api/v1/courier/login на авторизацию курьера с неправильным логином")
     public void invalidLoginErrorTest(){
-        // Создаю курьера
-        courierSteps.createCourier(courierCreatingDTO).statusCode(201);
         // Авторизуюсь с неправильным логином
         CourierLoginDTO courierLoginDTO1 = new CourierLoginDTO("Qwerty1234", courier.getPassword());
         courierSteps.loginCourier(courierLoginDTO1)
@@ -59,9 +60,8 @@ public class CourierLoginTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: система вернёт ошибку, если неправильно указать пароль")
+    @Description("Негативный тест для проверки ручки /api/v1/courier/login на авторизацию курьера с неправильным паролем")
     public void invalidPasswordErrorTest(){
-        // Создаю курьера
-        courierSteps.createCourier(courierCreatingDTO).statusCode(201);
         // Авторизуюсь с неправильным паролем
         CourierLoginDTO courierLoginDTO1 = new CourierLoginDTO(courier.getLogin(), "Qwerty1234");
         courierSteps.loginCourier(courierLoginDTO1)
@@ -75,9 +75,8 @@ public class CourierLoginTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: система вернёт ошибку, если не указать логин")
+    @Description("Негативный тест для проверки ручки /api/v1/courier/login на авторизацию курьера без логина")
     public void notValueLoginTest(){
-        // Создаю курьера
-        courierSteps.createCourier(courierCreatingDTO).statusCode(201);
         // Авторизуюсь с неправильным паролем
         CourierLoginDTO courierLoginDTO1 = new CourierLoginDTO("", courier.getPassword());
         courierSteps.loginCourier(courierLoginDTO1)
@@ -91,9 +90,8 @@ public class CourierLoginTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: система вернёт ошибку, если не указать пароль")
+    @Description("Негативный тест для проверки ручки /api/v1/courier/login на авторизацию курьера без пароля")
     public void notValuePasswordTest(){
-        // Создаю курьера
-        courierSteps.createCourier(courierCreatingDTO).statusCode(201);
         // Авторизуюсь с неправильным паролем
         CourierLoginDTO courierLoginDTO1 = new CourierLoginDTO(courier.getLogin(), "");
         courierSteps.loginCourier(courierLoginDTO1)
@@ -107,9 +105,8 @@ public class CourierLoginTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: система вернёт ошибку, если не указать логин и пароль")
+    @Description("Негативный тест для проверки ручки /api/v1/courier/login на авторизацию курьера без логина и пароля")
     public void notValueLoginAndPasswordTest(){
-        // Создаю курьера
-        courierSteps.createCourier(courierCreatingDTO).statusCode(201);
         // Авторизуюсь с неправильным паролем
         CourierLoginDTO courierLoginDTO1 = new CourierLoginDTO("", "");
         courierSteps.loginCourier(courierLoginDTO1)
@@ -123,18 +120,24 @@ public class CourierLoginTests extends BaseTest {
 
     @Test
     @DisplayName("Тест: авторизоваться под несуществующим пользователем, запрос возвращает ошибку")
+    @Description("Негативный тест для проверки ручки /api/v1/courier/login на авторизацию несуществующего курьера")
     public void invalidLoginAndPasswordErrorTest(){
         // Авторизуюсь под несуществующими логином и паролем
-        courierSteps.loginCourier(courierLoginDTO)
+        CourierLoginDTO courierLoginDTO1 = new CourierLoginDTO("78DvrnytuRedceReg71", "78DvrnytuRedceReg71");
+        courierSteps.loginCourier(courierLoginDTO1)
                 .statusCode(404)
                 .body("message", containsString("Учетная запись не найдена"));
+        // Авторизуюсь для получения id и удаления курьера из БД, который был создан в Before
+        ValidatableResponse loginResponse = courierSteps.loginCourier(courierLoginDTO);
+        loginResponse.statusCode(200).body("id", notNullValue());
+        courier.withCurierId(loginResponse.extract().body().path("id"));
     }
 
     @After
     // Удаляю курьера
     public void tearDown() {
         if (courier.getCourierId() != null) {
-            courierSteps.deleteCourier(courier).statusCode(200);
+            courierSteps.deleteCourier(courier.getCourierId()).statusCode(200);
         }
     }
 }
